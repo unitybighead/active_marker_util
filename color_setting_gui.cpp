@@ -84,7 +84,7 @@ void ColorSettingWindow::setupConnections() {
   connect(ui->set_button, &QPushButton::clicked, [&]() {
     robotID_ = getRobotID();
     RGB comm = {0, 0, 0};
-    std::string color = "dammy", command;
+    std::string color = "dummy", command;
 
     if (ui->pink_radio->isChecked()) {
       pinkRGB_.r = ui->r_slider->value();
@@ -112,10 +112,12 @@ void ColorSettingWindow::setupConnections() {
       comm = {yellowRGB_.r, yellowRGB_.g, yellowRGB_.b};
     }
 
-    command = "ros2 topic pub -1 /am" + std::to_string(robotID_) + "/" + color +
+    command = "timeout 3s ros2 topic pub /am" + std::to_string(robotID_) + "/" +
+              color +
               " std_msgs/msg/ColorRGBA \"{r: " + std::to_string(comm.r) +
-              ",g: " + std::to_string(comm.g) +
-              ",b: " + std::to_string(comm.b) + "}\"";
+              ", g: " + std::to_string(comm.g) +
+              ", b: " + std::to_string(comm.b) + "}\"";
+    std::cout << "publish: " << command << std::endl;
     system(command.c_str());
   });
 }

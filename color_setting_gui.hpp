@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 
 #include "color_settingJJPNua.h"  // 自動生成されたヘッダファイル
