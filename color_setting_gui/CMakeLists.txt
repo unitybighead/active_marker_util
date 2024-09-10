@@ -9,11 +9,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})  # これにより、自動生成されたヘッダファイルが見つかるようになります
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(${PROJECT_NAME}
     main.cpp
-    color_settingJJPNua.h  # 生成されたヘッダファイル
+    color_settingJJPNua.h
     color_setting_gui.cpp
     color_setting_gui.hpp
 )
