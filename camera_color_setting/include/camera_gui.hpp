@@ -15,9 +15,9 @@ class CameraGUINode : public rclcpp::Node {
   CameraGUINode();
 
  private:
-  using ColorMsg = std_msgs::msg::ColorRGBA;
+  using ColorMsg = active_marker_msgs::msg::RGB;
 
-    cv::VideoCapture cap_;
+  cv::VideoCapture cap_;
   cv::Mat frame_to_display_;
   rclcpp::TimerBase::SharedPtr timer_;
 

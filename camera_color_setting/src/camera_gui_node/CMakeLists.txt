@@ -8,11 +8,11 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 # Add main library
-file(GLOB MAIN_LIB_SOURCES "src/node/*.cpp")
+file(GLOB MAIN_LIB_SOURCES "node/*.cpp")
 ament_auto_add_library(${PROJECT_NAME} SHARED ${MAIN_LIB_SOURCES})
 
 # Find executables automatically
-file(GLOB EXECUTABLE_SOURCES "src/*.cpp")
+file(GLOB EXECUTABLE_SOURCES "*.cpp")
 
 foreach(EXECUTABLE_SOURCE ${EXECUTABLE_SOURCES})
   get_filename_component(EXECUTABLE_NAME ${EXECUTABLE_SOURCE} NAME_WE)
