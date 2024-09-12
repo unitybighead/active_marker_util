@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>camera_color_setting</name>
+  <name>pattern_calibrator</name>
   <version>0.1.0</version>
   <description>ROS2 node for capturing camera frames and displaying YUV and RGB values on click</description>
 
@@ -11,6 +11,7 @@
   <depend>rclcpp</depend>
   <depend>OpenCV</depend>
   <depend>active_marker_msgs</depend>
+  <depend>std_msgs</depend>
 
   <exec_depend>ros2launch</exec_depend>
 

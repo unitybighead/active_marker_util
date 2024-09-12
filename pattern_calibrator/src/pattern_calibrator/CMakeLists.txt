@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
-project(camera_color_setting)
+project(pattern_calibrator)
 
+set(CMAKE_CXX_STANDARD 20)
 # Find ament_cmake_auto first
 find_package(ament_cmake_auto REQUIRED)
 
@@ -19,6 +20,11 @@ foreach(EXECUTABLE_SOURCE ${EXECUTABLE_SOURCES})
   
   ament_auto_add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 endforeach()
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 # Install executables and libraries
 ament_auto_package()

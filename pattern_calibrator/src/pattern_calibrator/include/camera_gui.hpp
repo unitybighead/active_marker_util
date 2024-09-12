@@ -1,28 +1,29 @@
 #ifndef CAMERA_GUI_HPP_
 #define CAMERA_GUI_HPP_
 
-#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
-#include "active_marker_msgs/msg/rgb.hpp"
-
+#include "active_marker_msgs/msg/color_info.hpp"
 namespace active_marker {
-
 class CameraGUINode : public rclcpp::Node {
  public:
   CameraGUINode();
 
  private:
-  using ColorMsg = active_marker_msgs::msg::RGB;
+  enum class StateColor { BLUE, YELLOW, PINK, GREEN, NONE };
+
+  using ColorInfoMsg = active_marker_msgs::msg::ColorInfo;
 
   cv::VideoCapture cap_;
   cv::Mat frame_to_display_;
-  rclcpp::TimerBase::SharedPtr timer_;
-
-  std::string yuv_text_ = "";
   std::string rgb_text_ = "";
+  std::string yuv_text_ = "";
+  StateColor state_color_ = StateColor::NONE;
+  rclcpp::Publisher<ColorInfoMsg>::SharedPtr cur_color_publisher_;
+  rclcpp::Publisher<ColorInfoMsg>::SharedPtr ref_color_publisher_;
+  rclcpp::TimerBase::SharedPtr timer_;
 
   static void onMouse(int event, int x, int y, int, void* userdata);
   void update_frame();
