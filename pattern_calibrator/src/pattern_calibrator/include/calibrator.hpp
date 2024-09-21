@@ -30,7 +30,7 @@ class CalibratorNode : public rclcpp::Node {
   typedef struct {
     RGB rgb;
     YUV yuv;
-  } color_info;
+  } ColorInfo;
 
   enum class StateColor { BLUE, YELLOW, PINK, GREEN, NONE };
   const std::size_t update_hz_;
@@ -44,6 +44,20 @@ class CalibratorNode : public rclcpp::Node {
   rclcpp::TimerBase::SharedPtr timer_;
 
   StateColor state_color_ = StateColor::NONE;
+
+  ColorInfo cur_b_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+  ColorInfo cur_y_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+  ColorInfo cur_p_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+  ColorInfo cur_g_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+  ColorInfo ref_b_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+  ColorInfo ref_y_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+  ColorInfo ref_p_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+  ColorInfo ref_g_color_info_ = {{0, 0, 0}, {0, 0, 0}};
+
+  RGB RGB_blue_ = {0, 0, 255};
+  RGB RGB_yellow_ = {255, 255, 0};
+  RGB RGB_pink_ = {255, 50, 0};
+  RGB RGB_green_ = {0, 255, 0};
 
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
   void set_ref_color(ColorInfoMsg::SharedPtr msg);
