@@ -61,6 +61,7 @@ class CalibratorNode : public rclcpp::Node {
 
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
   void set_ref_color(ColorInfoMsg::SharedPtr msg);
+  void calibrate();
   void update();
 };
 }  // namespace active_marker
