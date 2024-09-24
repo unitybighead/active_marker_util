@@ -1,9 +1,15 @@
 #include "calibrator.hpp"
 
+#include <yaml-cpp/yaml.h>
+
 #include <chrono>
+#include <map>
 #include <memory>
 #include <ostream>
-#include <unordered_map>
+#include <string>
+#include <vector>
+
+#include "ament_index_cpp/get_package_share_directory.hpp"
 
 using namespace std::chrono_literals;
 
@@ -11,6 +17,34 @@ namespace active_marker {
 CalibratorNode::CalibratorNode()
     : Node("calibrator", "/am16"),
       update_hz_(this->declare_parameter<int>("update_hz", 10)) {
+  // set parameter from yaml file
+  std::string package_path =
+      ament_index_cpp::get_package_share_directory("pattern_calibrator");
+  std::string config_path = package_path + "/config_path.yaml";
+  try {
+    YAML::Node path_node = YAML::LoadFile(config_path);
+    std::string color_path = path_node["color"].as<std::string>();
+
+    YAML::Node color_node = YAML::LoadFile(color_path);
+    // std::string first_str = "/am**.ros__parameters.";
+    std::map<std::string, RGB*> to_read_list = {{"blue", &RGB_blue_},
+                                                {"yellow", &RGB_yellow_},
+                                                {"pink", &RGB_pink_},
+                                                {"green", &RGB_green_}};
+    for (const auto& pair : to_read_list) {
+      std::string color_name = pair.first;
+      RGB* rgb_value = pair.second;
+      if (color_node[color_name]) {
+        rgb_value->r = color_node[color_name]["r"].as<std::uint8_t>();
+        rgb_value->g = color_node[color_name]["g"].as<std::uint8_t>();
+        rgb_value->b = color_node[color_name]["b"].as<std::uint8_t>();
+      }
+    }
+  } catch (const std::exception& e) {
+    std::cerr << "Error:" << e.what() << std::endl;
+  }
+
+  // configuration of topic
   const auto qos = rclcpp::QoS(1).best_effort();
   const auto placeholders = std::placeholders::_1;
   cur_color_subscription_ = this->create_subscription<ColorInfoMsg>(
@@ -31,11 +65,11 @@ CalibratorNode::CalibratorNode()
 
 void CalibratorNode::set_cur_color(ColorInfoMsg::SharedPtr msg) {
   using enum StateColor;
-  std::unordered_map<std::string, std::pair<ColorInfo*, StateColor>> color_map =
-      {{"blue", {&cur_b_color_info_, BLUE}},
-       {"yellow", {&cur_y_color_info_, YELLOW}},
-       {"pink", {&cur_p_color_info_, PINK}},
-       {"green", {&cur_g_color_info_, GREEN}}};
+  std::map<std::string, std::pair<ColorInfo*, StateColor>> color_map = {
+      {"blue", {&cur_b_color_info_, BLUE}},
+      {"yellow", {&cur_y_color_info_, YELLOW}},
+      {"pink", {&cur_p_color_info_, PINK}},
+      {"green", {&cur_g_color_info_, GREEN}}};
 
   auto itr = color_map.find(msg->color);
   if (itr != color_map.end()) {
@@ -55,11 +89,10 @@ void CalibratorNode::set_cur_color(ColorInfoMsg::SharedPtr msg) {
 }
 
 void CalibratorNode::set_ref_color(ColorInfoMsg::SharedPtr msg) {
-  std::unordered_map<std::string, ColorInfo*> color_map = {
-      {"blue", &ref_b_color_info_},
-      {"yellow", &ref_y_color_info_},
-      {"pink", &ref_p_color_info_},
-      {"green", &ref_g_color_info_}};
+  std::map<std::string, ColorInfo*> color_map = {{"blue", &ref_b_color_info_},
+                                                 {"yellow", &ref_y_color_info_},
+                                                 {"pink", &ref_p_color_info_},
+                                                 {"green", &ref_g_color_info_}};
 
   auto itr = color_map.find(msg->color);
   if (itr != color_map.end()) {
@@ -77,12 +110,11 @@ void CalibratorNode::set_ref_color(ColorInfoMsg::SharedPtr msg) {
 
 void CalibratorNode::calibrate() {
   using enum StateColor;
-  std::unordered_map<StateColor, std::tuple<ColorInfo*, ColorInfo*, RGB*>>
-      color_map = {
-          {BLUE, {&ref_b_color_info_, &cur_b_color_info_, &RGB_blue_}},
-          {YELLOW, {&ref_y_color_info_, &cur_y_color_info_, &RGB_yellow_}},
-          {PINK, {&ref_p_color_info_, &cur_p_color_info_, &RGB_pink_}},
-          {GREEN, {&ref_g_color_info_, &cur_g_color_info_, &RGB_green_}}};
+  std::map<StateColor, std::tuple<ColorInfo*, ColorInfo*, RGB*>> color_map = {
+      {BLUE, {&ref_b_color_info_, &cur_b_color_info_, &RGB_blue_}},
+      {YELLOW, {&ref_y_color_info_, &cur_y_color_info_, &RGB_yellow_}},
+      {PINK, {&ref_p_color_info_, &cur_p_color_info_, &RGB_pink_}},
+      {GREEN, {&ref_g_color_info_, &cur_g_color_info_, &RGB_green_}}};
 
   auto itr = color_map.find(state_color_);
   if (itr != color_map.end()) {
@@ -95,9 +127,9 @@ void CalibratorNode::calibrate() {
       case BLUE:
         RCLCPP_INFO(this->get_logger(), "blue");
         if (cur_b_color_info_.yuv.y > ref_b_color_info_.yuv.y + 10) {
-          rgb_color->b -= 10;
+          rgb_color->b = std::max(0, rgb_color->b - 10);
         } else if (cur_b_color_info_.yuv.y < ref_b_color_info_.yuv.y - 10) {
-          rgb_color->b += 10;
+          rgb_color->b = std::min(255, rgb_color->b + 10);
         }
         break;
       case YELLOW:

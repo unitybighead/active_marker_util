@@ -10,8 +10,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
   <depend>OpenCV</depend>
+  <depend>yaml-cpp</depend>
   <depend>active_marker_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>ament_index_cpp</depend>
 
   <exec_depend>ros2launch</exec_depend>
 

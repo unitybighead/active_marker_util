@@ -20,9 +20,15 @@ foreach(EXECUTABLE_SOURCE ${EXECUTABLE_SOURCES})
   
   ament_auto_add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 endforeach()
+target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
 install(DIRECTORY
   launch
+  DESTINATION share/${PROJECT_NAME}
+)
+install(FILES
+  config_path.yaml
+  color_config.yaml
   DESTINATION share/${PROJECT_NAME}
 )
 

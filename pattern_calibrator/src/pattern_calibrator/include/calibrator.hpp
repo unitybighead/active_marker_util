@@ -56,7 +56,7 @@ class CalibratorNode : public rclcpp::Node {
 
   RGB RGB_blue_ = {0, 0, 255};
   RGB RGB_yellow_ = {255, 255, 0};
-  RGB RGB_pink_ = {255, 50, 0};
+  RGB RGB_pink_ = {255, 0, 50};
   RGB RGB_green_ = {0, 255, 0};
 
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
