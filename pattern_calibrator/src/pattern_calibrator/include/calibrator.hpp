@@ -6,6 +6,7 @@
 #include "active_marker_msgs/msg/color_info.hpp"
 #include "active_marker_msgs/msg/rgb.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include "std_msgs/msg/int16.hpp"
 
 namespace active_marker {
 class CalibratorNode : public rclcpp::Node {
@@ -16,6 +17,7 @@ class CalibratorNode : public rclcpp::Node {
   using ColorInfoMsg = active_marker_msgs::msg::ColorInfo;
   using RGBMsg = active_marker_msgs::msg::RGB;
   using BoolMsg = std_msgs::msg::Bool;
+  using Int16Msg = std_msgs::msg::Int16;
 
   typedef struct {
     std::uint8_t r;
@@ -36,6 +38,7 @@ class CalibratorNode : public rclcpp::Node {
   const std::size_t update_hz_;
   rclcpp::Subscription<ColorInfoMsg>::SharedPtr cur_color_subscription_;
   rclcpp::Subscription<ColorInfoMsg>::SharedPtr ref_color_subscription_;
+  rclcpp::Subscription<Int16Msg>::SharedPtr last_key_subscription_;
   rclcpp::Publisher<RGBMsg>::SharedPtr p_publisher_;
   rclcpp::Publisher<RGBMsg>::SharedPtr g_publisher_;
   rclcpp::Publisher<RGBMsg>::SharedPtr b_publisher_;
@@ -59,8 +62,15 @@ class CalibratorNode : public rclcpp::Node {
   RGB RGB_pink_ = {255, 0, 50};
   RGB RGB_green_ = {0, 255, 0};
 
+  // gain
+  const float kgain_y = 0.001;
+  const size_t kthr_y = 5;
+
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
   void set_ref_color(ColorInfoMsg::SharedPtr msg);
+  void set_state(Int16Msg::SharedPtr msg);
+  void read_color_config_yaml();
+  void publish_all_color();
   void calibrate();
   void update();
 };

@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/int16.hpp>
 #include <string>
 
 #include "active_marker_msgs/msg/color_info.hpp"
@@ -15,6 +16,7 @@ class CameraGUINode : public rclcpp::Node {
   enum class StateColor { BLUE, YELLOW, PINK, GREEN, NONE };
 
   using ColorInfoMsg = active_marker_msgs::msg::ColorInfo;
+  using Int16Msg = std_msgs::msg::Int16;
 
   cv::VideoCapture cap_;
   cv::Mat frame_to_display_;
@@ -23,6 +25,7 @@ class CameraGUINode : public rclcpp::Node {
   StateColor state_color_ = StateColor::NONE;
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr cur_color_publisher_;
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr ref_color_publisher_;
+  rclcpp::Publisher<Int16Msg>::SharedPtr last_key_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   static void onMouse(int event, int x, int y, int, void* userdata);

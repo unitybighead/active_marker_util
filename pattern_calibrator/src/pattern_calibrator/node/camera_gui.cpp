@@ -8,6 +8,7 @@ CameraGUINode::CameraGUINode() : Node("camera_gui", "/am16") {
   const auto qos = rclcpp::QoS(1).best_effort();
   cur_color_publisher_ = this->create_publisher<ColorInfoMsg>("cur_color", qos);
   ref_color_publisher_ = this->create_publisher<ColorInfoMsg>("ref_color", qos);
+  last_key_publisher_ = this->create_publisher<Int16Msg>("last_key", qos);
 
   // タイマーによってフレームをキャプチャ・表示
   timer_ =
@@ -108,25 +109,33 @@ void CameraGUINode::update_frame() {
     case 'b':
     case 'B':
       state_color_ = StateColor::BLUE;
+      RCLCPP_INFO(this->get_logger(), "blue");
       break;
     case 'y':
     case 'Y':
       state_color_ = StateColor::YELLOW;
+      RCLCPP_INFO(this->get_logger(), "yellow");
       break;
     case 'p':
     case 'P':
       state_color_ = StateColor::PINK;
+      RCLCPP_INFO(this->get_logger(), "pink");
       break;
     case 'g':
     case 'G':
       state_color_ = StateColor::GREEN;
+      RCLCPP_INFO(this->get_logger(), "green");
       break;
     case -1:
       break;
     default:
       state_color_ = StateColor::NONE;
+      RCLCPP_INFO(this->get_logger(), "none");
       break;
   }
+  auto msg = Int16Msg();
+  msg.data = key;
+  last_key_publisher_->publish(msg);
 }
 
 }  // namespace active_marker
