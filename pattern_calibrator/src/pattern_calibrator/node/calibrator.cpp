@@ -40,6 +40,7 @@ CalibratorNode::CalibratorNode()
       this->create_publisher<BoolMsg>("color_is_setting", qos);
   timer_ = this->create_wall_timer(1000ms / update_hz_,
                                    std::bind(&CalibratorNode::update, this));
+  publish_all_color();
 }
 
 void CalibratorNode::set_cur_color(ColorInfoMsg::SharedPtr msg) {
@@ -169,10 +170,18 @@ void CalibratorNode::calibrate() {
     // illuminance
     std::int16_t err = ref_color_info->yuv.y - cur_color_info->yuv.y;
     if (abs(err) > kthr_y) {
-      color_vec += kgain_y * err * color_vec;
+      color_vec += kP_y * err * color_vec;
     }
     // color
     else {
+      Eigen::Vector3d cur_rgb(cur_color_info->rgb.r, cur_color_info->rgb.g,
+                              cur_color_info->rgb.b);
+      Eigen::Vector3d ref_rgb(ref_color_info->rgb.r, ref_color_info->rgb.g,
+                              ref_color_info->rgb.b);
+      Eigen::Vector3d err = ref_rgb - cur_rgb;
+      if (err.norm() > kthr_rgb) {
+        color_vec += kP_rgb * err;
+      }
       switch (state_color_) {
         case BLUE:
           break;
@@ -223,6 +232,26 @@ void CalibratorNode::read_color_config_yaml() {
   } catch (const std::exception& e) {
     std::cerr << "Error:" << e.what() << std::endl;
   }
+}
+
+CalibratorNode::YUV CalibratorNode::rgb2yuv(RGB* rgb) {
+  YUV yuv;
+  yuv.y =
+      std::clamp(0.299 * rgb->r + 0.587 * rgb->g + 0.114 * rgb->b, 0.0, 255.0);
+  yuv.u = std::clamp(
+      -0.14713 * rgb->r - 0.28886 * rgb->g + 0.436 * rgb->b + 128, 0.0, 255.0);
+  yuv.v = std::clamp(0.615 * rgb->r - 0.51499 * rgb->g - 0.10001 * rgb->b + 128,
+                     0.0, 255.0);
+  return yuv;
+}
+
+CalibratorNode::RGB CalibratorNode::yuv2rgb(YUV* yuv) {
+  RGB rgb;
+  rgb.r = std::clamp(yuv->y + 1.13983 * (yuv->v - 128), 0.0, 255.0);
+  rgb.g = std::clamp(
+      yuv->y - 0.39465 * (yuv->u - 128) - 0.58060 * (yuv->v - 128), 0.0, 255.0);
+  rgb.b = std::clamp(yuv->y + 2.03211 * (yuv->u - 128), 0.0, 255.0);
+  return rgb;
 }
 
 void CalibratorNode::update() {

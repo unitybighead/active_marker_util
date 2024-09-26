@@ -11,14 +11,6 @@
 namespace active_marker {
 class CalibratorNode : public rclcpp::Node {
  public:
-  CalibratorNode();
-
- private:
-  using ColorInfoMsg = active_marker_msgs::msg::ColorInfo;
-  using RGBMsg = active_marker_msgs::msg::RGB;
-  using BoolMsg = std_msgs::msg::Bool;
-  using Int16Msg = std_msgs::msg::Int16;
-
   typedef struct {
     std::uint8_t r;
     std::uint8_t g;
@@ -33,6 +25,14 @@ class CalibratorNode : public rclcpp::Node {
     RGB rgb;
     YUV yuv;
   } ColorInfo;
+
+  CalibratorNode();
+
+ private:
+  using ColorInfoMsg = active_marker_msgs::msg::ColorInfo;
+  using RGBMsg = active_marker_msgs::msg::RGB;
+  using BoolMsg = std_msgs::msg::Bool;
+  using Int16Msg = std_msgs::msg::Int16;
 
   enum class StateColor { BLUE, YELLOW, PINK, GREEN, NONE };
   const std::size_t update_hz_;
@@ -63,8 +63,13 @@ class CalibratorNode : public rclcpp::Node {
   RGB RGB_green_ = {0, 255, 0};
 
   // gain
-  const float kgain_y = 0.001;
+  const float kP_y = 0.001;
+  const float kP_r = 0.001;
+  const float kP_g = 0.001;
+  const float kP_b = 0.001;
+  const float kP_rgb = 0.001;
   const size_t kthr_y = 5;
+  const size_t kthr_rgb = 10;
 
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
   void set_ref_color(ColorInfoMsg::SharedPtr msg);
@@ -72,6 +77,8 @@ class CalibratorNode : public rclcpp::Node {
   void read_color_config_yaml();
   void publish_all_color();
   void calibrate();
+  YUV rgb2yuv(RGB* rgb);
+  RGB yuv2rgb(YUV* yuv);
   void update();
 };
 }  // namespace active_marker

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "active_marker_msgs/msg/color_info.hpp"
+#include "dc1394.hpp"
 namespace active_marker {
 class CameraGUINode : public rclcpp::Node {
  public:
@@ -18,8 +19,10 @@ class CameraGUINode : public rclcpp::Node {
   using ColorInfoMsg = active_marker_msgs::msg::ColorInfo;
   using Int16Msg = std_msgs::msg::Int16;
 
+  DC1394 dc1394_;
   cv::VideoCapture cap_;
   cv::Mat frame_to_display_;
+  cv::Mat selected_region_;
   std::string rgb_text_ = "";
   std::string yuv_text_ = "";
   StateColor state_color_ = StateColor::NONE;
@@ -28,7 +31,10 @@ class CameraGUINode : public rclcpp::Node {
   rclcpp::Publisher<Int16Msg>::SharedPtr last_key_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  static void onMouse(int event, int x, int y, int, void* userdata);
+  float zoom_scale_ = 1.0;
+  bool is_zoomed_ = false;
+
+  static void onMouse(int event, int x, int y, int flags, void* userdata);
   void update_frame();
 };
 

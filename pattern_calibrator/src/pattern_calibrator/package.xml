@@ -15,6 +15,7 @@
   <depend>std_msgs</depend>
   <depend>ament_index_cpp</depend>
   <depend>eigen3</depend>
+  <depend>dc1394</depend>
 
   <exec_depend>ros2launch</exec_depend>
 
