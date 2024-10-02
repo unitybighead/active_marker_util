@@ -23,8 +23,10 @@ class CameraGUINode : public rclcpp::Node {
   cv::VideoCapture cap_;
   cv::Mat frame_to_display_;
   cv::Mat selected_region_;
-  std::string rgb_text_ = "";
-  std::string yuv_text_ = "";
+  std::string cur_yuv_text_ = "";
+  std::string cur_rgb_text_ = "";
+  std::string ref_yuv_text_ = "";
+  std::string ref_rgb_text_ = "";
   StateColor state_color_ = StateColor::NONE;
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr cur_color_publisher_;
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr ref_color_publisher_;

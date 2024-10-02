@@ -5,7 +5,7 @@
 namespace active_marker {
 
 CameraGUINode::CameraGUINode() : Node("camera_gui", "/am16") {
-  const auto qos = rclcpp::QoS(1).best_effort();
+  const auto qos = rclcpp::QoS(1).reliable();
   cur_color_publisher_ = this->create_publisher<ColorInfoMsg>("cur_color", qos);
   ref_color_publisher_ = this->create_publisher<ColorInfoMsg>("ref_color", qos);
   last_key_publisher_ = this->create_publisher<Int16Msg>("last_key", qos);
@@ -26,7 +26,7 @@ CameraGUINode::CameraGUINode() : Node("camera_gui", "/am16") {
     }
   }
 
-  // ウィンドウを作成し、マウスコールバックを設定
+  // create a window and set callback functions
   cv::namedWindow("Pattern Calibrator", cv::WINDOW_NORMAL);
   cv::setMouseCallback("Pattern Calibrator", CameraGUINode::onMouse, this);
 }
@@ -53,18 +53,6 @@ void CameraGUINode::onMouse(int event, int x, int y, int flags,
         cv::cvtColor(bgr, yuv, cv::COLOR_BGR2YUV);
         cv::Vec3b yuv_pixel = yuv.at<cv::Vec3b>(0, 0);
 
-        // YUVとRGBの値を文字列に変換
-        std::ostringstream rgb_stream, yuv_stream;
-        rgb_stream << "R: " << static_cast<int>(bgr_pixel[2])
-                   << ", G: " << static_cast<int>(bgr_pixel[1])
-                   << ", B: " << static_cast<int>(bgr_pixel[0]);
-        yuv_stream << "Y: " << static_cast<int>(yuv_pixel[0])
-                   << ", U: " << static_cast<int>(yuv_pixel[1])
-                   << ", V: " << static_cast<int>(yuv_pixel[2]);
-
-        self->rgb_text_ = rgb_stream.str();
-        self->yuv_text_ = yuv_stream.str();
-
         auto color_msg = ColorInfoMsg();
         color_msg.rgb.r = bgr_pixel[2];
         color_msg.rgb.g = bgr_pixel[1];
@@ -72,6 +60,13 @@ void CameraGUINode::onMouse(int event, int x, int y, int flags,
         color_msg.yuv.y = yuv_pixel[0];
         color_msg.yuv.u = yuv_pixel[1];
         color_msg.yuv.v = yuv_pixel[2];
+        std::stringstream rgb_text, yuv_text;
+        rgb_text << "R: " << static_cast<int>(color_msg.rgb.r)
+                 << " G: " << static_cast<int>(color_msg.rgb.g)
+                 << " B: " << static_cast<int>(color_msg.rgb.b);
+        yuv_text << "Y: " << static_cast<int>(color_msg.yuv.y)
+                 << " U: " << static_cast<int>(color_msg.yuv.u)
+                 << " V: " << static_cast<int>(color_msg.yuv.v);
 
         if (self->state_color_ == StateColor::NONE) {
           RCLCPP_ERROR(self->get_logger(),
@@ -79,18 +74,22 @@ void CameraGUINode::onMouse(int event, int x, int y, int flags,
           return;
         }
 
-        static const std::unordered_map<StateColor, std::string> color_map = {
+        static const std::map<StateColor, std::string> color_map = {
             {StateColor::BLUE, "blue"},
             {StateColor::YELLOW, "yellow"},
             {StateColor::PINK, "pink"},
-            {StateColor::GREEN, "green"}};
-
+            {StateColor::GREEN, "green"},
+            {StateColor::NONE, "none"}};
         color_msg.color = color_map.at(self->state_color_);
 
         if (event == cv::EVENT_LBUTTONDOWN) {
           self->cur_color_publisher_->publish(color_msg);
+          self->cur_rgb_text_ = rgb_text.str();
+          self->cur_yuv_text_ = yuv_text.str();
         } else if (event == cv::EVENT_RBUTTONDOWN) {
           self->ref_color_publisher_->publish(color_msg);
+          self->ref_rgb_text_ = rgb_text.str();
+          self->ref_yuv_text_ = yuv_text.str();
         }
       }
     }
@@ -147,7 +146,7 @@ void CameraGUINode::update_frame() {
     first_frame = false;
   }
 
-  frame_to_display_ = frame.clone();  // 表示用フレームをコピー
+  frame_to_display_ = frame.clone();
 
   if (is_zoomed_) {
     cv::resize(selected_region_, selected_region_, frame_to_display_.size(), 0,
@@ -155,10 +154,25 @@ void CameraGUINode::update_frame() {
     frame_to_display_ = selected_region_.clone();  // ズームした部分を表示
   }
 
-  cv::putText(frame_to_display_, rgb_text_, cv::Point(10, 30),
-              cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 255, 0), 2);
-  cv::putText(frame_to_display_, yuv_text_, cv::Point(10, 60),
-              cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 255, 0), 2);
+  static const std::map<StateColor, std::string> color_map = {
+      {StateColor::BLUE, "BLUE"},
+      {StateColor::YELLOW, "YELLOW"},
+      {StateColor::PINK, "PINK"},
+      {StateColor::GREEN, "GREEN"},
+      {StateColor::NONE, "NONE"}};
+  std::string color_text = color_map.at(state_color_);
+
+  cv::putText(frame_to_display_, color_text, cv::Point(10, 30),
+              cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, cur_rgb_text_, cv::Point(10, 50),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, cur_yuv_text_, cv::Point(10, 70),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, ref_rgb_text_, cv::Point(10, 100),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, ref_yuv_text_, cv::Point(10, 120),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+
   cv::imshow("Pattern Calibrator", frame_to_display_);
   cv::waitKey(1);  // 少し待って次のフレームをキャプチャ
 
