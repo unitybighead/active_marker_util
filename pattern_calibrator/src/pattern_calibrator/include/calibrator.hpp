@@ -63,14 +63,13 @@ class CalibratorNode : public rclcpp::Node {
   RGB RGB_green_ = {0, 255, 0};
 
   // gain
-  const float kP_y = 0.001;
-  const float kP_r = 0.001;
-  const float kP_g = 0.001;
-  const float kP_b = 0.001;
-  const float kP_rgb = 0.001;
-  const size_t kthr_y = 5;
-  const size_t kthr_rgb = 10;
-
+  const float kP_Y = 0.001;
+  const float kP_R = 0.05;
+  const float kP_G = 0.05;
+  const float kP_B = 0.05;
+  const float kP_RGB = 0.001;
+  const size_t kTHR_Y = 5;
+  const size_t kTHR_RGB = 5;
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
   void set_ref_color(ColorInfoMsg::SharedPtr msg);
   void set_state(Int16Msg::SharedPtr msg);

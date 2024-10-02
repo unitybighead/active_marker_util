@@ -21,7 +21,7 @@ CalibratorNode::CalibratorNode()
   read_color_config_yaml();
 
   // configuration of topic
-  const auto qos = rclcpp::QoS(1).best_effort();
+  const auto qos = rclcpp::QoS(1).reliable();
   const auto placeholders = std::placeholders::_1;
   cur_color_subscription_ = this->create_subscription<ColorInfoMsg>(
       "cur_color", qos,
@@ -169,8 +169,8 @@ void CalibratorNode::calibrate() {
     Eigen::Vector3d color_vec(rgb_color->r, rgb_color->g, rgb_color->b);
     // illuminance
     std::int16_t err = ref_color_info->yuv.y - cur_color_info->yuv.y;
-    if (abs(err) > kthr_y) {
-      color_vec += kP_y * err * color_vec;
+    if (abs(err) > kTHR_Y) {
+      color_vec += kP_Y * err * color_vec;
     }
     // color
     else {
@@ -178,10 +178,18 @@ void CalibratorNode::calibrate() {
                               cur_color_info->rgb.b);
       Eigen::Vector3d ref_rgb(ref_color_info->rgb.r, ref_color_info->rgb.g,
                               ref_color_info->rgb.b);
-      Eigen::Vector3d err = ref_rgb - cur_rgb;
-      if (err.norm() > kthr_rgb) {
-        color_vec += kP_rgb * err;
+      // Eigen::Vector3d err = ref_rgb - cur_rgb;
+      // if (err.norm() > kTHR_RGB) {
+      //   color_vec += kP_RGB * err;
+      // }
+      const static float kGAIN_LIST[3] = {kP_R, kP_G, kP_B};
+      for (int i = 0; i < 3; i++) {
+        uint8_t err = ref_rgb(i) - cur_rgb(i);
+        if (abs(err) > kTHR_RGB) {
+          color_vec(i) += kGAIN_LIST[i] * err;
+        }
       }
+
       switch (state_color_) {
         case BLUE:
           break;
@@ -195,6 +203,8 @@ void CalibratorNode::calibrate() {
           return;
       }
     }
+    RCLCPP_INFO(this->get_logger(), "%f %f %f", color_vec[0], color_vec[1],
+                color_vec[2]);
     *rgb_color = {static_cast<uint8_t>(std::clamp(color_vec[0], 0.0, 255.0)),
                   static_cast<uint8_t>(std::clamp(color_vec[1], 0.0, 255.0)),
                   static_cast<uint8_t>(std::clamp(color_vec[2], 0.0, 255.0))};
