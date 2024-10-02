@@ -171,6 +171,7 @@ void CalibratorNode::calibrate() {
     std::int16_t err = ref_color_info->yuv.y - cur_color_info->yuv.y;
     if (abs(err) > kTHR_Y) {
       color_vec += kP_Y * err * color_vec;
+      RCLCPP_INFO(this->get_logger(), "y err %d", err);
     }
     // color
     else {
@@ -178,16 +179,14 @@ void CalibratorNode::calibrate() {
                               cur_color_info->rgb.b);
       Eigen::Vector3d ref_rgb(ref_color_info->rgb.r, ref_color_info->rgb.g,
                               ref_color_info->rgb.b);
-      // Eigen::Vector3d err = ref_rgb - cur_rgb;
-      // if (err.norm() > kTHR_RGB) {
-      //   color_vec += kP_RGB * err;
-      // }
-      const static float kGAIN_LIST[3] = {kP_R, kP_G, kP_B};
+      const float kP_LIST[3] = {kP_R, kP_G, kP_B};
       for (int i = 0; i < 3; i++) {
-        uint8_t err = ref_rgb(i) - cur_rgb(i);
+        int16_t err = ref_rgb(i) - cur_rgb(i);
         if (abs(err) > kTHR_RGB) {
-          color_vec(i) += kGAIN_LIST[i] * err;
+          color_vec(i) += kP_LIST[i] * err;
         }
+        RCLCPP_INFO(this->get_logger(), "%d c err %d", i, err);
+        RCLCPP_INFO(this->get_logger(), "%d c y %f", i, color_vec(i));
       }
 
       switch (state_color_) {
@@ -205,9 +204,9 @@ void CalibratorNode::calibrate() {
     }
     RCLCPP_INFO(this->get_logger(), "%f %f %f", color_vec[0], color_vec[1],
                 color_vec[2]);
-    *rgb_color = {static_cast<uint8_t>(std::clamp(color_vec[0], 0.0, 255.0)),
-                  static_cast<uint8_t>(std::clamp(color_vec[1], 0.0, 255.0)),
-                  static_cast<uint8_t>(std::clamp(color_vec[2], 0.0, 255.0))};
+    *rgb_color = {static_cast<uint8_t>(std::clamp(color_vec(0), 0.0, 255.0)),
+                  static_cast<uint8_t>(std::clamp(color_vec(1), 0.0, 255.0)),
+                  static_cast<uint8_t>(std::clamp(color_vec(2), 0.0, 255.0))};
     auto rgb_msg = RGBMsg();
     rgb_msg.r = rgb_color->r;
     rgb_msg.g = rgb_color->g;
