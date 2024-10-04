@@ -10,7 +10,7 @@ find_package(Eigen3)
 ament_auto_find_build_dependencies()
 
 # Add main library
-file(GLOB MAIN_LIB_SOURCES "node/*.cpp")
+file(GLOB MAIN_LIB_SOURCES "src/*.cpp")
 ament_auto_add_library(${PROJECT_NAME} SHARED ${MAIN_LIB_SOURCES})
 
 # Find executables automatically

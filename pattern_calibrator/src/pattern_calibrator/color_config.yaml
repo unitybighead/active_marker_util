@@ -1,16 +1,16 @@
-pink:
-  r: 128
-  g: 0
-  b: 25
-green:
-  r: 0
-  g: 128
-  b: 0
 blue:
   r: 0
   g: 0
   b: 128
 yellow:
   r: 128
+  g: 128
+  b: 0
+pink:
+  r: 128
+  g: 0
+  b: 25
+green:
+  r: 0
   g: 128
   b: 0
