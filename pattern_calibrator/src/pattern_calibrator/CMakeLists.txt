@@ -29,7 +29,6 @@ install(DIRECTORY
 )
 install(FILES
   config_path.yaml
-  color_config.yaml
   DESTINATION share/${PROJECT_NAME}
 )
 

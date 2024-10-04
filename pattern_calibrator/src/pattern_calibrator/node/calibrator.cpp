@@ -4,6 +4,7 @@
 
 #include <Eigen/Dense>
 #include <chrono>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <ostream>
@@ -31,7 +32,7 @@ CalibratorNode::CalibratorNode()
       std::bind(&CalibratorNode::set_ref_color, this, placeholders));
   last_key_subscription_ = this->create_subscription<Int16Msg>(
       "last_key", qos,
-      std::bind(&CalibratorNode::set_state, this, placeholders));
+      std::bind(&CalibratorNode::set_key_state, this, placeholders));
   p_publisher_ = this->create_publisher<RGBMsg>("pink", qos);
   g_publisher_ = this->create_publisher<RGBMsg>("green", qos);
   b_publisher_ = this->create_publisher<RGBMsg>("blue", qos);
@@ -88,7 +89,7 @@ void CalibratorNode::set_ref_color(ColorInfoMsg::SharedPtr msg) {
   }
 }
 
-void CalibratorNode::set_state(Int16Msg::SharedPtr msg) {
+void CalibratorNode::set_key_state(Int16Msg::SharedPtr msg) {
   switch (msg->data) {
     using enum StateColor;
     case 'b':
@@ -112,6 +113,10 @@ void CalibratorNode::set_state(Int16Msg::SharedPtr msg) {
       read_color_config_yaml();
       publish_all_color();
       RCLCPP_INFO(this->get_logger(), "reset color param");
+      break;
+    case 's':
+    case 'S':
+      write_color_config_yaml();
       break;
     case -1:
       break;
@@ -238,6 +243,38 @@ void CalibratorNode::read_color_config_yaml() {
         rgb_value->b = color_node[color_name]["b"].as<std::uint8_t>();
       }
     }
+  } catch (const std::exception& e) {
+    std::cerr << "Error:" << e.what() << std::endl;
+  }
+}
+
+void CalibratorNode::write_color_config_yaml() {
+  const std::string package_path =
+      ament_index_cpp::get_package_share_directory("pattern_calibrator");
+  const std::string config_path = package_path + "/config_path.yaml";
+  try {
+    const YAML::Node path_node = YAML::LoadFile(config_path);
+    const std::string result_path = path_node["result"].as<std::string>();
+
+    YAML::Node config_node;
+    const std::map<std::string, RGB*> to_write_list = {{"blue", &RGB_blue_},
+                                                       {"yellow", &RGB_yellow_},
+                                                       {"pink", &RGB_pink_},
+                                                       {"green", &RGB_green_}};
+    for (const auto& pair : to_write_list) {
+      std::string color_name = pair.first;
+      RGB* rgb_value = pair.second;
+      int r = rgb_value->r;
+      int g = rgb_value->g;
+      int b = rgb_value->b;
+      config_node[color_name]["r"] = r;
+      config_node[color_name]["g"] = g;
+      config_node[color_name]["b"] = b;
+    }
+    std::ofstream fout(result_path);
+    fout << config_node;
+    RCLCPP_INFO(this->get_logger(), "Write config to file.");
+
   } catch (const std::exception& e) {
     std::cerr << "Error:" << e.what() << std::endl;
   }
