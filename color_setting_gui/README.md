@@ -1,6 +1,4 @@
-# active_marker_gui
-
-Currently, only "color setting manager" is implemented. We plan to add more as necessary.
+# color_setting_gui
 
 ## Required packages
 
