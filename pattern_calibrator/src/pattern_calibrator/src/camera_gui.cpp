@@ -205,12 +205,6 @@ void CameraGUINode::update_frame() {
     case 'Z':
       is_zoomed_ = false;
       break;
-    case '+':
-      zoom_scale_ += 0.1;
-      break;
-    case '-':
-      zoom_scale_ = std::max(0.1, zoom_scale_ - 0.1);
-      break;
     case -1:
       break;
     default:

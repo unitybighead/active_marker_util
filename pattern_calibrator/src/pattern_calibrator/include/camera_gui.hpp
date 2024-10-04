@@ -33,7 +33,6 @@ class CameraGUINode : public rclcpp::Node {
   rclcpp::Publisher<Int16Msg>::SharedPtr last_key_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  float zoom_scale_ = 1.0;
   bool is_zoomed_ = false;
 
   static void onMouse(int event, int x, int y, int flags, void* userdata);

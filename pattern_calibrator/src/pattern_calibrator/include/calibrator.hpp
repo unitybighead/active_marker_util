@@ -69,6 +69,7 @@ class CalibratorNode : public rclcpp::Node {
   static constexpr float kP_B = 0.05;
   static constexpr size_t kTHR_Y = 20;
   static constexpr size_t kTHR_RGB = 10;
+
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
   void set_ref_color(ColorInfoMsg::SharedPtr msg);
   void set_key_state(Int16Msg::SharedPtr msg);
