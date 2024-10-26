@@ -1,3 +1,6 @@
 [submodule "pattern_calibrator/src/active_marker_msgs"]
 	path = pattern_calibrator/src/active_marker_msgs
 	url = https://github.com/unitybighead/active_marker_msgs.git
+[submodule "all_publish/src/active_marker_msgs"]
+	path = all_publish/src/active_marker_msgs
+	url = https://github.com/unitybighead/active_marker_msgs.git
