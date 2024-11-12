@@ -1,16 +1,16 @@
 blue:
   r: 0
   g: 0
-  b: 255
+  b: 32
 green:
   r: 0
-  g: 255
+  g: 51
   b: 0
 pink:
-  r: 255
+  r: 90
   g: 0
-  b: 50
+  b: 22
 yellow:
-  r: 255
-  g: 255
+  r: 40
+  g: 40
   b: 0
