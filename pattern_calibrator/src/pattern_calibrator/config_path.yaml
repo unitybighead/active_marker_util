@@ -1,2 +1,3 @@
 color: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/color_config.yaml
 result: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config_result.yaml
+log: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/log.csv
