@@ -12,7 +12,7 @@ CameraGUINode::CameraGUINode() : Node("camera_gui", "/am16") {
 
   // タイマーによってフレームをキャプチャ・表示
   timer_ =
-      this->create_wall_timer(std::chrono::milliseconds(20),
+      this->create_wall_timer(std::chrono::milliseconds(50),
                               std::bind(&CameraGUINode::update_frame, this));
 
   // カメラを開く

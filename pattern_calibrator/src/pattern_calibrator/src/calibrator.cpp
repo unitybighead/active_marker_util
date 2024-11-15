@@ -20,6 +20,7 @@ CalibratorNode::CalibratorNode()
       update_hz_(this->declare_parameter<int>("update_hz", 10)) {
   // set parameter from yaml file
   read_color_config_yaml();
+  read_color_ref_yaml();
 
   // configuration of topic
   const auto qos = rclcpp::QoS(1).reliable();
@@ -193,20 +194,36 @@ void CalibratorNode::calibrate() {
         RCLCPP_INFO(this->get_logger(), "%d c err %d", i, err);
         RCLCPP_INFO(this->get_logger(), "%d c y %f", i, color_vec(i));
       }
-
-      switch (state_color_) {
-        case BLUE:
-          break;
-        case YELLOW:
-          break;
-        case PINK:
-          break;
-        case GREEN:
-          break;
-        default:
-          return;
-      }
     }
+
+    switch (state_color_) {
+      case BLUE:
+        if (color_vec(2) <= 3) {
+          color_vec(2) += 10;
+        }
+        break;
+      case StateColor::YELLOW:
+        if (color_vec(0) <= 3) {
+          color_vec(0) += 10;
+        }
+        if (color_vec(1) <= 3) {
+          color_vec(1) += 10;
+        }
+        break;
+      case StateColor::PINK:
+        if (color_vec(0) <= 3) {
+          color_vec(0) += 10;
+        }
+        break;
+      case StateColor::GREEN:
+        if (color_vec(1) <= 3) {
+          color_vec(1) += 10;
+        }
+        break;
+      default:
+        return;
+    }
+
     RCLCPP_INFO(this->get_logger(), "%f %f %f", color_vec[0], color_vec[1],
                 color_vec[2]);
     *rgb_color = {static_cast<uint8_t>(std::clamp(color_vec(0), 0.0, 255.0)),
@@ -275,6 +292,36 @@ void CalibratorNode::write_color_config_yaml() {
     fout << config_node;
     RCLCPP_INFO(this->get_logger(), "Write config to file.");
 
+  } catch (const std::exception& e) {
+    std::cerr << "Error:" << e.what() << std::endl;
+  }
+}
+
+void CalibratorNode::read_color_ref_yaml() {
+  std::string package_path =
+      ament_index_cpp::get_package_share_directory("pattern_calibrator");
+  std::string config_path = package_path + "/config_path.yaml";
+  try {
+    YAML::Node path_node = YAML::LoadFile(config_path);
+    std::string ref_path = path_node["ref"].as<std::string>();
+
+    YAML::Node ref_node = YAML::LoadFile(ref_path);
+    // std::string first_str = "/am**.ros__parameters.";
+    std::map<std::string, ColorInfo*> to_read_list = {
+        {"blue", &ref_b_color_info_},
+        {"yellow", &ref_y_color_info_},
+        {"pink", &ref_p_color_info_},
+        {"green", &ref_g_color_info_}};
+    for (const auto& pair : to_read_list) {
+      std::string color_name = pair.first;
+      ColorInfo* color_info = pair.second;
+      if (ref_node[color_name]) {
+        color_info->rgb.r = ref_node[color_name]["r"].as<std::uint8_t>();
+        color_info->rgb.g = ref_node[color_name]["g"].as<std::uint8_t>();
+        color_info->rgb.b = ref_node[color_name]["b"].as<std::uint8_t>();
+        color_info->yuv = rgb2yuv(&(color_info->rgb));
+      }
+    }
   } catch (const std::exception& e) {
     std::cerr << "Error:" << e.what() << std::endl;
   }

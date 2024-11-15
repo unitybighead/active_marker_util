@@ -25,7 +25,7 @@ LoggerNode::LoggerNode()
   y_subscription_ = this->create_subscription<ColorMsg>(
       "yellow", qos, std::bind(&LoggerNode::set_yellow, this, placeholders));
   illuminance_subscription_ = this->create_subscription<IlluminanceMsg>(
-      "illuminance", qos,
+      "illuminance", rclcpp::QoS(1).best_effort(),
       std::bind(&LoggerNode::set_illuminance, this, placeholders));
   last_key_subscription_ = this->create_subscription<Int16Msg>(
       "last_key", qos, std::bind(&LoggerNode::check_key, this, placeholders));
