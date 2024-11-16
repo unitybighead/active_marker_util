@@ -31,11 +31,14 @@ class CameraGUINode : public rclcpp::Node {
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr cur_color_publisher_;
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr ref_color_publisher_;
   rclcpp::Publisher<Int16Msg>::SharedPtr last_key_publisher_;
+  rclcpp::Subscription<Int16Msg>::SharedPtr last_key_subscription_;
   rclcpp::TimerBase::SharedPtr timer_;
 
+  const std::size_t update_hz_;
   bool is_zoomed_ = false;
 
   static void onMouse(int event, int x, int y, int flags, void* userdata);
+  void set_key_state(Int16Msg::SharedPtr msg);
   void update_frame();
 };
 

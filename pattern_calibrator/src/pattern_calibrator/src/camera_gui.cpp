@@ -1,21 +1,26 @@
 #include "camera_gui.hpp"
 
+#include <chrono>
 #include <sstream>
 
+using namespace std::chrono_literals;
 namespace active_marker {
 
-CameraGUINode::CameraGUINode() : Node("camera_gui", "/am16") {
+CameraGUINode::CameraGUINode()
+    : Node("camera_gui", "/am16"),
+      update_hz_(this->declare_parameter<int>("update_hz", 30)) {
   const auto qos = rclcpp::QoS(1).reliable();
   cur_color_publisher_ = this->create_publisher<ColorInfoMsg>("cur_color", qos);
   ref_color_publisher_ = this->create_publisher<ColorInfoMsg>("ref_color", qos);
   last_key_publisher_ = this->create_publisher<Int16Msg>("last_key", qos);
+  last_key_subscription_ = this->create_subscription<Int16Msg>(
+      "last_key", qos,
+      std::bind(&CameraGUINode::set_key_state, this, std::placeholders::_1));
 
-  // タイマーによってフレームをキャプチャ・表示
-  timer_ =
-      this->create_wall_timer(std::chrono::milliseconds(50),
-                              std::bind(&CameraGUINode::update_frame, this));
+  timer_ = this->create_wall_timer(
+      1000ms / update_hz_, std::bind(&CameraGUINode::update_frame, this));
 
-  // カメラを開く
+  // open the camera
   // if it's not connected DC1394, use default camera
   if (!dc1394_.is_available()) {
     RCLCPP_ERROR(this->get_logger(), "DC1394 initialize error");
@@ -97,7 +102,7 @@ void CameraGUINode::onMouse(int event, int x, int y, int flags,
 
   else if (event == cv::EVENT_MOUSEMOVE && dragging) {
     drag_end = cv::Point(x, y);
-    // 矩形を描画（ドラッグ中の視覚フィードバック用）
+    // draw rectangle (for feedback)
     cv::Mat frame_copy = self->frame_to_display_.clone();
     cv::rectangle(frame_copy, drag_start, drag_end, cv::Scalar(255, 255, 0), 2);
     cv::imshow("Pattern Calibrator", frame_copy);
@@ -117,10 +122,10 @@ void CameraGUINode::onMouse(int event, int x, int y, int flags,
       self->selected_region_ = self->frame_to_display_(selected_rect);
       cv::resize(self->selected_region_, self->selected_region_,
                  self->frame_to_display_.size(), 0, 0,
-                 cv::INTER_LINEAR);  // フレーム全体にリサイズ
+                 cv::INTER_LINEAR);  // resize entire frame
 
       if (selected_rect.area() > 0) {
-        // 選択された領域を保存してズーム表示
+        // save selected region and zooming
         self->selected_region_ = self->frame_to_display_(selected_rect);
         self->is_zoomed_ = true;
       }
@@ -128,55 +133,8 @@ void CameraGUINode::onMouse(int event, int x, int y, int flags,
   }
 }
 
-void CameraGUINode::update_frame() {
-  cv::Mat frame;
-  static bool first_frame = true;
-  if (dc1394_.is_available()) {
-    frame = dc1394_.capture();
-  } else {
-    cap_ >> frame;
-  }
-
-  if (frame.empty()) {
-    RCLCPP_ERROR(this->get_logger(), "Captured empty frame");
-    rclcpp::shutdown();
-  }
-  if (first_frame) {
-    cv::resizeWindow("Pattern Calibrator", frame.cols, frame.rows);
-    first_frame = false;
-  }
-
-  frame_to_display_ = frame.clone();
-
-  if (is_zoomed_) {
-    cv::resize(selected_region_, selected_region_, frame_to_display_.size(), 0,
-               0, cv::INTER_LINEAR);
-    frame_to_display_ = selected_region_.clone();  // ズームした部分を表示
-  }
-
-  static const std::map<StateColor, std::string> color_map = {
-      {StateColor::BLUE, "BLUE"},
-      {StateColor::YELLOW, "YELLOW"},
-      {StateColor::PINK, "PINK"},
-      {StateColor::GREEN, "GREEN"},
-      {StateColor::NONE, "NONE"}};
-  std::string color_text = color_map.at(state_color_);
-
-  cv::putText(frame_to_display_, color_text, cv::Point(10, 30),
-              cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 0), 2);
-  cv::putText(frame_to_display_, cur_rgb_text_, cv::Point(10, 50),
-              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
-  cv::putText(frame_to_display_, cur_yuv_text_, cv::Point(10, 70),
-              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
-  cv::putText(frame_to_display_, ref_rgb_text_, cv::Point(10, 100),
-              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
-  cv::putText(frame_to_display_, ref_yuv_text_, cv::Point(10, 120),
-              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
-
-  cv::imshow("Pattern Calibrator", frame_to_display_);
-  cv::waitKey(1);  // 少し待って次のフレームをキャプチャ
-
-  int key = cv::waitKey(30);
+void CameraGUINode::set_key_state(Int16Msg::SharedPtr msg) {
+  int key = msg->data;
   switch (key) {
     case 27:  // ESC
       rclcpp::shutdown();
@@ -212,9 +170,62 @@ void CameraGUINode::update_frame() {
       RCLCPP_INFO(this->get_logger(), "none");
       break;
   }
+}
+
+void CameraGUINode::update_frame() {
+  cv::Mat frame;
+  static bool first_frame = true;
+  if (dc1394_.is_available()) {
+    frame = dc1394_.capture();
+  } else {
+    cap_ >> frame;
+  }
+
+  if (frame.empty()) {
+    RCLCPP_ERROR(this->get_logger(), "Captured empty frame");
+    rclcpp::shutdown();
+  }
+  if (first_frame) {
+    cv::resizeWindow("Pattern Calibrator", frame.cols, frame.rows);
+    first_frame = false;
+  }
+
+  frame_to_display_ = frame.clone();
+
+  if (is_zoomed_) {
+    cv::resize(selected_region_, selected_region_, frame_to_display_.size(), 0,
+               0, cv::INTER_LINEAR);
+    frame_to_display_ = selected_region_.clone();  // display zoomed region
+  }
+
+  static const std::map<StateColor, std::string> color_map = {
+      {StateColor::BLUE, "BLUE"},
+      {StateColor::YELLOW, "YELLOW"},
+      {StateColor::PINK, "PINK"},
+      {StateColor::GREEN, "GREEN"},
+      {StateColor::NONE, "NONE"}};
+  std::string color_text = color_map.at(state_color_);
+
+  cv::putText(frame_to_display_, color_text, cv::Point(10, 30),
+              cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, cur_rgb_text_, cv::Point(10, 50),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, cur_yuv_text_, cv::Point(10, 70),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, ref_rgb_text_, cv::Point(10, 100),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, ref_yuv_text_, cv::Point(10, 120),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+
+  cv::imshow("Pattern Calibrator", frame_to_display_);
+
+  // key
+  int key = cv::pollKey();
   auto msg = Int16Msg();
-  msg.data = key;
+  msg.data = (int)key;
   last_key_publisher_->publish(msg);
+
+  cv::waitKey(1);
 }
 
 }  // namespace active_marker
