@@ -135,6 +135,10 @@ void CameraGUINode::onMouse(int event, int x, int y, int flags,
 
 void CameraGUINode::set_key_state(Int16Msg::SharedPtr msg) {
   int key = msg->data;
+  StateColor prev_state = state_color_;
+  if (key != -1) {
+    last_key_text_ = static_cast<char>(key);
+  }
   switch (key) {
     case 27:  // ESC
       rclcpp::shutdown();
@@ -169,6 +173,12 @@ void CameraGUINode::set_key_state(Int16Msg::SharedPtr msg) {
       state_color_ = StateColor::NONE;
       RCLCPP_INFO(this->get_logger(), "none");
       break;
+  }
+  if (prev_state != state_color_) {
+    cur_rgb_text_ = "";
+    cur_yuv_text_ = "";
+    ref_rgb_text_ = "";
+    ref_yuv_text_ = "";
   }
 }
 
@@ -216,16 +226,18 @@ void CameraGUINode::update_frame() {
               cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
   cv::putText(frame_to_display_, ref_yuv_text_, cv::Point(10, 120),
               cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
+  cv::putText(frame_to_display_, last_key_text_, cv::Point(300, 30),
+              cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 0), 2);
 
   cv::imshow("Pattern Calibrator", frame_to_display_);
 
   // key
   int key = cv::pollKey();
-  auto msg = Int16Msg();
-  msg.data = (int)key;
-  last_key_publisher_->publish(msg);
-
-  cv::waitKey(1);
+  if (key != -1) {
+    auto msg = Int16Msg();
+    msg.data = (int)key;
+    last_key_publisher_->publish(msg);
+  }
 }
 
 }  // namespace active_marker

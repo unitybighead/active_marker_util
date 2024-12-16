@@ -27,6 +27,7 @@ class CameraGUINode : public rclcpp::Node {
   std::string cur_rgb_text_ = "";
   std::string ref_yuv_text_ = "";
   std::string ref_rgb_text_ = "";
+  std::string last_key_text_ = "";
   StateColor state_color_ = StateColor::NONE;
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr cur_color_publisher_;
   rclcpp::Publisher<ColorInfoMsg>::SharedPtr ref_color_publisher_;
