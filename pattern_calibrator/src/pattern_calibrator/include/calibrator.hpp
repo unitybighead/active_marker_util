@@ -67,8 +67,8 @@ class CalibratorNode : public rclcpp::Node {
   static constexpr float kP_R = 0.03;
   static constexpr float kP_G = 0.03;
   static constexpr float kP_B = 0.03;
-  static constexpr size_t kTHR_Y = 10;
-  static constexpr size_t kTHR_RGB = 5;
+  static constexpr size_t kTHR_Y = 15;
+  static constexpr size_t kTHR_RGB = 10;
 
   void set_cur_color(ColorInfoMsg::SharedPtr msg);
   void set_ref_color(ColorInfoMsg::SharedPtr msg);
@@ -77,6 +77,7 @@ class CalibratorNode : public rclcpp::Node {
   void write_color_config_yaml();
   void read_color_ref_yaml();
   void publish_all_color();
+  void update_config_intercepts();
   void calibrate();
   YUV rgb2yuv(RGB* rgb);
   RGB yuv2rgb(YUV* yuv);

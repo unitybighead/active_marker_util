@@ -11,6 +11,7 @@
 #include <string>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "linear_regression.hpp"
 
 using namespace std::chrono_literals;
 
@@ -119,6 +120,9 @@ void CalibratorNode::set_key_state(Int16Msg::SharedPtr msg) {
     case 'S':
       write_color_config_yaml();
       break;
+    case 'i':
+    case 'I':
+      update_config_intercepts();
     case -1:
       break;
     default:
@@ -234,6 +238,27 @@ void CalibratorNode::calibrate() {
     rgb_msg.g = rgb_color->g;
     rgb_msg.b = rgb_color->b;
     publisher->publish(rgb_msg);
+  }
+}
+
+void CalibratorNode::update_config_intercepts() {
+  const std::string package_path =
+      ament_index_cpp::get_package_share_directory("pattern_calibrator");
+  const std::string config_path = package_path + "/config_path.yaml";
+  try {
+    const YAML::Node path_node = YAML::LoadFile(config_path);
+    const std::string log_path = path_node["log"].as<std::string>();
+
+    LinearRegression lr(log_path);
+    std::vector<std::uint8_t> intercepts = lr.calc_intercepts();
+
+    RGB_blue_ = {intercepts[0], intercepts[1], intercepts[2]};
+    RGB_yellow_ = {intercepts[3], intercepts[4], intercepts[5]};
+    RGB_pink_ = {intercepts[6], intercepts[7], intercepts[8]};
+    RGB_green_ = {intercepts[9], intercepts[10], intercepts[11]};
+    write_color_config_yaml();
+  } catch (const std::exception& e) {
+    std::cerr << "Error:" << e.what() << std::endl;
   }
 }
 
