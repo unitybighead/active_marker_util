@@ -3,6 +3,8 @@
 #include <chrono>
 #include <sstream>
 
+#include "virtual_video_dev.hpp"
+
 using namespace std::chrono_literals;
 namespace active_marker {
 
@@ -199,7 +201,10 @@ void CameraGUINode::update_frame() {
     cv::resizeWindow("Pattern Calibrator", frame.cols, frame.rows);
     first_frame = false;
   }
-
+  VirtualVideoDev v4l2;
+  if (!v4l2.send_mat_to_v4l2(frame, "/dev/video9")) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to send frame to v4l2");
+  }
   frame_to_display_ = frame.clone();
 
   if (is_zoomed_) {
