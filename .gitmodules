@@ -4,3 +4,9 @@
 [submodule "all_publisher/src/active_marker_msgs"]
 	path = all_publisher/src/active_marker_msgs
 	url = https://github.com/unitybighead/active_marker_msgs.git
+[submodule "pattern_calibrator/src/pattern_calibrator/include/proto/ssl-protos"]
+	path = pattern_calibrator/src/pattern_calibrator/include/proto/ssl-protos
+	url = https://github.com/kiksworks/ssl-protos.git
+[submodule "pattern_calibrator/src/pattern_calibrator/include/ssl-protos"]
+	path = pattern_calibrator/src/pattern_calibrator/include/ssl-protos
+	url = https://github.com/kiksworks/ssl-protos.git
