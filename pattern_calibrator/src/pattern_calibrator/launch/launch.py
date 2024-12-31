@@ -24,5 +24,11 @@ def generate_launch_description():
                 executable="logger",
                 on_exit=Shutdown(),
             ),
+            Node(
+                package="pattern_calibrator",
+                namespace="/am16",
+                executable="vision_receiver",
+                on_exit=Shutdown(),
+            ),
         ]
     )

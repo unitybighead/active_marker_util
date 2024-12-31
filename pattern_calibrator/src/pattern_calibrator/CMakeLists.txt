@@ -13,6 +13,10 @@ ament_auto_find_build_dependencies()
 file(GLOB MAIN_LIB_SOURCES "src/*.cpp")
 ament_auto_add_library(${PROJECT_NAME} SHARED ${MAIN_LIB_SOURCES})
 
+# Add ssl-proto library
+add_subdirectory("include/ssl-protos")
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
+
 # Find executables automatically
 file(GLOB EXECUTABLE_SOURCES "*.cpp")
 
@@ -21,7 +25,7 @@ foreach(EXECUTABLE_SOURCE ${EXECUTABLE_SOURCES})
   
   ament_auto_add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 endforeach()
-target_link_libraries(${PROJECT_NAME} yaml-cpp Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} yaml-cpp Eigen3::Eigen ssl-protos)
 
 install(DIRECTORY
   launch

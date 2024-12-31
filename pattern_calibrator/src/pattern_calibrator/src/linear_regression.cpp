@@ -3,15 +3,15 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
-LinearRegression::LinearRegression(std::string filename)
+LinearRegression::LinearRegression(const std::string& filename)
     : filename_(filename) {}
 
-void LinearRegression::load_CSV() {
+void LinearRegression::loadCSV() {
   std::ifstream file(filename_);
   if (!file.is_open()) {
-    std::cerr << "Error: Cannot open file " << filename_ << std::endl;
-    exit(1);
+    throw std::runtime_error("Error: Cannot open file " + filename_);
   }
 
   std::vector<std::vector<double>> data;
@@ -23,16 +23,26 @@ void LinearRegression::load_CSV() {
     std::vector<double> row;
 
     while (std::getline(ss, value, ',')) {
-      row.push_back(std::stod(value));
+      try {
+        row.push_back(std::stod(value));
+      } catch (const std::invalid_argument&) {
+        throw std::runtime_error("Error: Invalid data format in CSV.");
+      }
     }
-
     data.push_back(row);
   }
 
   file.close();
 
+  if (data.empty()) {
+    throw std::runtime_error("Error: Empty CSV file.");
+  }
+
   size_t rows = data.size();
   size_t cols = data[0].size();
+  if (cols < 2) {
+    throw std::runtime_error("Error: Insufficient columns in CSV file.");
+  }
 
   X_ = Eigen::MatrixXd(rows, 1);
   Y_ = Eigen::MatrixXd(rows, cols - 1);
@@ -46,7 +56,7 @@ void LinearRegression::load_CSV() {
 }
 
 std::vector<std::uint8_t> LinearRegression::calc_intercepts() {
-  load_CSV();
+  loadCSV();
   size_t numTargets = Y_.cols();
   std::vector<std::uint8_t> intercepts;
 
@@ -56,14 +66,16 @@ std::vector<std::uint8_t> LinearRegression::calc_intercepts() {
     Eigen::MatrixXd X_design(X_.rows(), 2);
     X_design << ones, X_;
 
-    Eigen::VectorXd beta =
-        (X_design.transpose() * X_design).inverse() * X_design.transpose() * y;
-    intercepts.push_back(beta(0));
+    Eigen::VectorXd beta = (X_design.transpose() * X_design)
+                               .ldlt()
+                               .solve(X_design.transpose() * y);
 
-    std::cerr << "Intercepts: " << std::endl;
-    for (const auto &intercept : intercepts) {
-      std::cerr << std::to_string(intercept) << std::endl;
-    }
+    intercepts.push_back(static_cast<std::uint8_t>(beta(0)));
+  }
+
+  std::cerr << "Calculated intercepts:" << std::endl;
+  for (const auto& intercept : intercepts) {
+    std::cerr << static_cast<int>(intercept) << std::endl;
   }
 
   return intercepts;

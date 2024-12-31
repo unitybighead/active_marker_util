@@ -7,9 +7,9 @@ yellow:
   g: 128
   b: 0
 pink:
-  r: 128
+  r: 255
   g: 0
-  b: 25
+  b: 50
 green:
   r: 0
   g: 128
