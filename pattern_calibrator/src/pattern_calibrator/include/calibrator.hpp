@@ -5,7 +5,6 @@
 
 #include "active_marker_msgs/msg/color_info.hpp"
 #include "active_marker_msgs/msg/rgb.hpp"
-#include "active_marker_msgs/srv/robot_info.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/int16.hpp"
 
@@ -34,7 +33,6 @@ class CalibratorNode : public rclcpp::Node {
   using RGBMsg = active_marker_msgs::msg::RGB;
   using BoolMsg = std_msgs::msg::Bool;
   using Int16Msg = std_msgs::msg::Int16;
-  using RobotInfoSrv = active_marker_msgs::srv::RobotInfo;
 
   enum class StateColor { BLUE, YELLOW, PINK, GREEN, NONE };
   const std::size_t update_hz_;
@@ -46,7 +44,6 @@ class CalibratorNode : public rclcpp::Node {
   rclcpp::Publisher<RGBMsg>::SharedPtr b_publisher_;
   rclcpp::Publisher<RGBMsg>::SharedPtr y_publisher_;
   rclcpp::Publisher<BoolMsg>::SharedPtr color_is_setting_publisher_;
-  rclcpp::Client<RobotInfoSrv>::SharedPtr robot_info_client_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   StateColor state_color_ = StateColor::NONE;

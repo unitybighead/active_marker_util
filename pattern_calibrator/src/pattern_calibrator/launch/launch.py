@@ -8,25 +8,26 @@ def generate_launch_description():
         [
             Node(
                 package="pattern_calibrator",
-                namespace="/am16",
+                namespace="/am10",
                 executable="camera_gui",
                 on_exit=Shutdown(),
             ),
             Node(
                 package="pattern_calibrator",
-                namespace="/am16",
+                namespace="/am10",
                 executable="calibrator",
                 on_exit=Shutdown(),
             ),
             Node(
                 package="pattern_calibrator",
-                namespace="/am16",
+                namespace="/am10",
                 executable="logger",
+                parameters=[{"ID": 10, "team_color": "blue"}],
                 on_exit=Shutdown(),
             ),
             Node(
                 package="pattern_calibrator",
-                namespace="/am16",
+                namespace="/am10",
                 executable="vision_receiver",
                 on_exit=Shutdown(),
             ),

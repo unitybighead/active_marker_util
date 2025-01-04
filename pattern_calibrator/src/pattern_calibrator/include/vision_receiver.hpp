@@ -44,7 +44,6 @@ class VisionReceiverNode : public rclcpp::Node {
   void serve_robot_info(const std::shared_ptr<RobotInfoSrv::Request> request,
                         const std::shared_ptr<RobotInfoSrv::Response> response);
   bool is_received();
-  bool is_received(int ID);
 
   void update();
 };

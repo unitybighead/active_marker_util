@@ -41,7 +41,6 @@ CalibratorNode::CalibratorNode()
   y_publisher_ = this->create_publisher<RGBMsg>("yellow", qos);
   color_is_setting_publisher_ =
       this->create_publisher<BoolMsg>("color_is_setting", qos);
-  robot_info_client_ = this->create_client<RobotInfoSrv>("robot_info");
   timer_ = this->create_wall_timer(1000ms / update_hz_,
                                    std::bind(&CalibratorNode::update, this));
   publish_all_color();
