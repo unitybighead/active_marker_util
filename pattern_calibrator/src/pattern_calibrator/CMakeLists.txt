@@ -27,14 +27,5 @@ foreach(EXECUTABLE_SOURCE ${EXECUTABLE_SOURCES})
 endforeach()
 target_link_libraries(${PROJECT_NAME} yaml-cpp Eigen3::Eigen ssl-protos)
 
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}
-)
-install(FILES
-  config_path.yaml
-  DESTINATION share/${PROJECT_NAME}
-)
-
 # Install executables and libraries
-ament_auto_package()
+ament_auto_package(INSTALL_TO_SHARE launch config)

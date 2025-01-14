@@ -1,0 +1,5 @@
+color: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config/color_config.yaml
+ref: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config/color_ref.yaml
+result: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config/config_result.yaml
+log: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/0109.csv
+camera: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config/camera.yaml

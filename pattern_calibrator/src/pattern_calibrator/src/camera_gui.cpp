@@ -10,7 +10,7 @@ namespace active_marker {
 
 CameraGUINode::CameraGUINode()
     : Node("camera_gui", "/am16"),
-      update_hz_(this->declare_parameter<int>("update_hz", 30)) {
+      update_hz_(this->declare_parameter<int>("update_hz", 20)) {
   const auto qos = rclcpp::QoS(1).reliable();
   cur_color_publisher_ = this->create_publisher<ColorInfoMsg>("cur_color", qos);
   ref_color_publisher_ = this->create_publisher<ColorInfoMsg>("ref_color", qos);

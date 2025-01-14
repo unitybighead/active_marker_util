@@ -13,7 +13,7 @@ using namespace std::chrono_literals;
 namespace active_marker {
 LoggerNode::LoggerNode()
     : Node("logger", "/am16"),
-      update_hz_(this->declare_parameter<int>("update_hz", 5)),
+      update_hz_(this->declare_parameter<int>("update_hz", 30)),
       ID_(this->declare_parameter<int>("ID", 16)),
       team_color_(this->declare_parameter<std::string>("team_color", "blue")) {
   const auto qos = rclcpp::QoS(1).reliable();
@@ -192,10 +192,15 @@ LoggerNode::PosRelation_t LoggerNode::calc_pos_relation(Eigen::Vector3d& pos1,
 
 void LoggerNode::update() {
   no_recv_count_++;
-  if (is_service_available(robot_info_client_)) {
-    request_robot_info(ID_, team_color_);
-  } else {
-    RCLCPP_ERROR(this->get_logger(), "Service is not available");
+  static int i = 0;
+  i++;
+  if (i % 5 == 0) {
+    i = 0;
+    if (i % 5 == 0 && is_service_available(robot_info_client_)) {
+      request_robot_info(ID_, team_color_);
+    } else {
+      RCLCPP_ERROR(this->get_logger(), "Service is not available");
+    }
   }
 }
 
