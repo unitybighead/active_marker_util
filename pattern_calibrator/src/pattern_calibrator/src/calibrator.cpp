@@ -244,7 +244,7 @@ void CalibratorNode::calibrate() {
 void CalibratorNode::update_config_intercepts() {
   const std::string package_path =
       ament_index_cpp::get_package_share_directory("pattern_calibrator");
-  const std::string config_path = package_path + "/config_path.yaml";
+  const std::string config_path = package_path + "/config/config_path.yaml";
   try {
     const YAML::Node path_node = YAML::LoadFile(config_path);
     const std::string log_path = path_node["log"].as<std::string>();
@@ -265,7 +265,7 @@ void CalibratorNode::update_config_intercepts() {
 void CalibratorNode::read_color_config_yaml() {
   std::string package_path =
       ament_index_cpp::get_package_share_directory("pattern_calibrator");
-  std::string config_path = package_path + "/config_path.yaml";
+  std::string config_path = package_path + "/config/config_path.yaml";
   try {
     YAML::Node path_node = YAML::LoadFile(config_path);
     std::string color_path = path_node["color"].as<std::string>();
@@ -293,7 +293,7 @@ void CalibratorNode::read_color_config_yaml() {
 void CalibratorNode::write_color_config_yaml() {
   const std::string package_path =
       ament_index_cpp::get_package_share_directory("pattern_calibrator");
-  const std::string config_path = package_path + "/config_path.yaml";
+  const std::string config_path = package_path + "/config/config_path.yaml";
   try {
     const YAML::Node path_node = YAML::LoadFile(config_path);
     const std::string result_path = path_node["result"].as<std::string>();
@@ -325,7 +325,7 @@ void CalibratorNode::write_color_config_yaml() {
 void CalibratorNode::read_color_ref_yaml() {
   std::string package_path =
       ament_index_cpp::get_package_share_directory("pattern_calibrator");
-  std::string config_path = package_path + "/config_path.yaml";
+  std::string config_path = package_path + "/config/config_path.yaml";
   try {
     YAML::Node path_node = YAML::LoadFile(config_path);
     std::string ref_path = path_node["ref"].as<std::string>();

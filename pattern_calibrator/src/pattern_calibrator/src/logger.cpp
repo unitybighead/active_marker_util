@@ -86,7 +86,7 @@ void LoggerNode::write_config_csv() {
 
   const std::string package_path =
       ament_index_cpp::get_package_share_directory("pattern_calibrator");
-  const std::string config_path = package_path + "/config_path.yaml";
+  const std::string config_path = package_path + "/config/config_path.yaml";
 
   PosRelation_t robot_camera_relation = {0, 0};
   if (is_robot_info_received_) {
