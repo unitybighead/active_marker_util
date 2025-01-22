@@ -1,5 +1,5 @@
 #ifndef MULTICAST_HPP_
-#define MULTICASTmaruti_HPP_
+#define MULTICAST_HPP_
 
 #include <unistd.h>
 
@@ -24,4 +24,4 @@ class UdpReceiver {
   std::function<void(std::vector<uint8_t>)> callback_;
 };
 
-#endif  // UDP_HPP_
+#endif  // MULTICAST_HPP_

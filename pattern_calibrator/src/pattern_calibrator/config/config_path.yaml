@@ -3,3 +3,4 @@ ref: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calib
 result: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config/config_result.yaml
 log: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/0109.csv
 camera: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config/camera.yaml
+reg_coef: /home/haru/Documents/active_marker_gui/pattern_calibrator/src/pattern_calibrator/config/reg_coef.yaml
